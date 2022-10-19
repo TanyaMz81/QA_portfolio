@@ -1,0 +1,155 @@
+-- 1.how many vendors, product lines, and products exist in the database?
+select count(distinct productVendor) from classicmodels.products;
+select count(distinct productLine) from classicmodels.products;
+select count(distinct productName) from classicmodels.products;
+
+-- 2.what is the average buy price, MSRP per vendor?
+select avg(buyPrice) from classicmodels.products;
+select distinct productVendor, avg(buyPrice), avg(MSRP) from classicmodels.products
+group by productVendor;
+
+
+-- 3.what is the average buy price, MSRP per customer?
+select avg(p.buyPrice), avg(p.MSRP), c.customerName
+from classicmodels.products p
+left join classicmodels.orderdetails d
+on p.productCode = d.productCode
+left join classicmodels.orders o
+on d.orderNumber = o.orderNumber
+left join classicmodels.customers c
+on o.customerNumber = c.customerNumber
+group by customerName;
+
+
+-- 4.what product was sold the most?
+select distinct o.productCode, o.quantityOrdered, p.productName from classicmodels.orderdetails o
+left join classicmodels.products p
+on o.productCode = p.productCode
+order by o.quantityOrdered desc
+limit 1;
+
+-- 5.how much money was made between buyPrice and MSRP? ('5064.79')
+select (sum(MSRP) - sum(buyPrice)) as profit
+from classicmodels.products;
+
+
+-- 6.which vendor sells 1966 Shelby Cobra? ('Carousel DieCast Legends') 
+select productName, productVendor from classicmodels.products
+where productName like '%1966 Shelby Cobra%'; 
+
+
+-- 7.which vendor sells more products?
+select distinct productVendor, count(productName) from classicmodels.products
+group by productVendor;
+
+-- 8.which product is the most and least expensive? 
+SELECT msrp as mostexp, productName 
+FROM classicmodels.products
+ORDER BY msrp desc
+LIMIT 1;
+SELECT msrp as leastexp, productName 
+FROM classicmodels.products
+ORDER BY msrp 
+LIMIT 1;
+select min(msrp), max(msrp)
+from classicmodels.products;
+
+-- 9.which product has the most quantityInStock?
+select productName, quantityInStock from classicmodels.products
+order by quantityInStock desc
+LIMIT 1;
+
+
+
+-- 10.list all products that have quantity in stock less than 20 
+select productName, quantityInStock from classicmodels.products
+where quantityInStock < 20
+order by quantityInStock desc;
+
+
+
+-- 11.which customer has the highest and lowest credit limit? 
+select customerName, creditLimit as lowestLimit 
+from classicmodels.customers
+order by creditLimit asc
+LIMIT 1;
+
+SELECT customerNumber, creditLimit as highestLimit
+FROM classicmodels.customers
+ORDER BY creditlimit desc
+LIMIT 1;
+
+
+-- 14.customers in what city are the most profitable to the company? 
+select distinct p.customerNumber, sum(p.amount) as highestAmount, c.customerName, c.city
+from classicmodels.payments p
+inner join classicmodels.customers c
+on p.customerNumber = c.customerNumber
+group by customerNumber
+order by highestamount desc
+LIMIT 1;
+
+ -- based on highest single payment
+ 
+SELECT c.city, c.customerNumber, p.amount as payedAmount
+FROM classicmodels.customers c
+JOIN classicmodels.payments p ON c.customerNumber = p.customerNumber 
+ORDER BY p.amount desc
+LIMIT 1;
+
+-- 16.who is the best customer? +
+select distinct p.customerNumber, sum(p.amount) as highestAmount, c.customerName, c.city
+from classicmodels.payments p
+inner join classicmodels.customers c
+on p.customerNumber = c.customerNumber
+group by customerNumber
+order by highestamount desc
+LIMIT 1;
+
+
+-- 17.customers without payment +
+SELECT c.customerNumber, c.customerName, p.amount
+FROM classicmodels.customers c
+LEFT JOIN classicmodels.payments p ON c.customerNumber = p.customerNumber
+WHERE amount is Null;
+
+
+
+-- 2.which books did Van Parks write? 
+select a.id, a.first_name, a.last_name,
+b.author_id, b.book_id, 
+c.id, c.name, c.page_num, c.pub_year
+from library_simple.author a
+join library_simple.author_has_book	b
+on a.id = b.author_id
+join library_simple.book c 
+on b.book_id = c.id
+where a.first_name = 'Van' and a.last_name = 'Parks';
+
+
+-- 3.which books where published in 2003? +
+select a.id, a.first_name, a.last_name,
+b.author_id, b.book_id, 
+c.id, c.ISBN, c.name, c.page_num, c.pub_year
+from library_simple.author a
+join library_simple.author_has_book	b
+on a.id = b.author_id
+join library_simple.book c 
+on b.book_id = c.id
+where c.pub_year = '2003';
+
+-- sql statement (classicmodels db) using union: 
+-- show products with buyPrice > 100 and <200
+select productName, buyPrice from classicmodels.products
+where buyPrice > 100 and buyPrice < 200;
+
+-- sql statement (classicmodels db) using subquery: 
+-- show all customer names with employees in San Francisco office
+
+select lastName, firstName, officeCode
+from classicmodels.employees
+where officeCode in
+(select officecode from classicmodels.offices
+where city like 'San Francisco');
+
+
